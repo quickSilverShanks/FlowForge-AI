@@ -1,4 +1,7 @@
-# FlowForge AI 🚀
+
+<img width="1024" height="500" alt="flowforge_logo02" src="https://github.com/user-attachments/assets/28076f4f-60de-4873-9bb1-783cb4f8b9aa" />
+
+# FlowForge AI
 
 **Agentic MLflow Model Development & Governance Platform**
 
