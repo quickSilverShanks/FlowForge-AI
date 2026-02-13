@@ -14,11 +14,11 @@ The system is composed of several Docker services orchestrated via Docker Compos
 
 ```mermaid
 graph TD
-    User((User)) -->|Browser| UI[Streamlit UI :8501]
-    UI -->|HTTP| API[FastAPI Backend :8000]
-    API -->|Manage| Prefect[Prefect Orchestrator :4200]
-    API -->|Log| MLflow[MLflow Tracking :5000]
-    API -->|Prompt| Ollama[Ollama LLM (GPU) :11434]
+    User((User)) -->|Browser| UI[Streamlit UI : 8501]
+    UI -->|HTTP| API[FastAPI Backend : 8000]
+    API -->|Manage| Prefect[Prefect Orchestrator : 4200]
+    API -->|Log| MLflow[MLflow Tracking : 5000]
+    API -->|Prompt| Ollama[Ollama LLM GPU : 11434]
     Prefect -->|Run| Workers[ML Workers]
     Workers -->|Train| Optuna[Optuna Optimization]
     Workers -->|Track| MLflow
@@ -65,7 +65,7 @@ graph TD
 Access the services at the following URLs:
 
 | Service | URL | Description |
-| copy | --- | --- |
+| --- | --- | --- |
 | **App UI** | `http://localhost:8501` | Main Interface |
 | **Backend API** | `http://localhost:8000/docs` | API Swagger |
 | **MLflow** | `http://localhost:5000` | Experiment Tracking |
