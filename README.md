@@ -6,7 +6,7 @@ FlowForge AI is an open-source, containerized Machine Learning platform that aut
 
 ![Architecture](https://img.shields.io/badge/Architecture-Microservices-blue)
 ![Python](https://img.shields.io/badge/Python-3.10-green)
-![License](https://img.shields.io/badge/License-MIT-purple)
+![License](https://img.shields.io/badge/License-Apache%202.0-blue)
 
 ## 🏗️ Architecture
 
