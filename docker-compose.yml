@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.0
+    container_name: flowforge_mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow/mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+    volumes:
+      - mlflow_data:/mlflow
+    command: mlflow server --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root /mlflow/artifacts --host 0.0.0.0 --port 5000
+    networks:
+      - flowforge_network
+
+  prefect:
+    image: prefecthq/prefect:2.16.0-python3.10
+    container_name: flowforge_prefect
+    entrypoint: [ "prefect", "server", "start" ]
+    environment:
+      - PREFECT_SERVER_API_HOST=0.0.0.0
+      - PREFECT_SERVER_API_PORT=4200
+      - PREFECT_UI_URL=http://localhost:4200/api
+    ports:
+      - "4200:4200"
+    volumes:
+      - prefect_data:/root/.prefect
+    networks:
+      - flowforge_network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: flowforge_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    networks:
+      - flowforge_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: flowforge_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PREFECT_API_URL=http://prefect:4200/api
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - ./app:/app
+      - flowforge_data:/app/data
+    depends_on:
+      - mlflow
+      - prefect
+      - ollama
+    networks:
+      - flowforge_network
+
+  ui:
+    build:
+      context: .
+      dockerfile: docker/ui.Dockerfile
+    container_name: flowforge_ui
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://backend:8000
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PREFECT_API_URL=http://prefect:4200/api
+    volumes:
+      - ./app:/app
+      - flowforge_data:/app/data
+    depends_on:
+      - backend
+    networks:
+      - flowforge_network
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: flowforge_dozzle
+    ports:
+      - "8888:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - flowforge_network
+
+networks:
+  flowforge_network:
+    driver: bridge
+
+volumes:
+  mlflow_data:
+  ollama_data:
+  prefect_data:
+  flowforge_data:

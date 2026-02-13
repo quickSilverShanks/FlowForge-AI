@@ -1,0 +1,28 @@
+fastapi==0.109.2
+uvicorn==0.27.1
+streamlit==1.31.1
+mlflow==2.10.0
+# Prefect - pinning to 2.16.0 to match the server
+prefect==2.16.0
+optuna==3.5.0
+scikit-learn==1.4.0
+xgboost==2.0.3
+lightgbm==4.3.0
+shap==0.44.1
+pandas==2.2.0
+numpy==1.26.4
+# LangChain & Ollama
+langchain==0.1.9
+langchain-community==0.0.24
+langchain-core==0.1.26
+# Ollama integration might require specific pkg or just requests
+requests==2.31.0
+matplotlib==3.8.2
+seaborn==0.13.2
+# Database for MLflow (sqlite is built-in python, but sqlalchemy is needed)
+SQLAlchemy==2.0.27
+# For async
+httpx==0.26.0
+# For fairness
+fairlearn==0.10.0
+python-multipart==0.0.9
