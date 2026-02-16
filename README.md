@@ -69,7 +69,7 @@ Access the services at the following URLs:
 
 | Service | URL | Description |
 | --- | --- | --- |
-| **App UI** | `http://localhost:8501` | Main Interface |
+| **App UI** | `http://localhost:8501` | Main Interface (Streamlit) |
 | **Backend API** | `http://localhost:8000/docs` | API Swagger |
 | **MLflow** | `http://localhost:5000` | Experiment Tracking |
 | **Prefect** | `http://localhost:4200` | Workflow Orchestration |

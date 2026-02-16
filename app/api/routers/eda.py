@@ -8,7 +8,7 @@ from app.core.utils.logger import SessionLogger
 
 router = APIRouter(prefix="/eda", tags=["eda"])
 
-DATA_DIR = "/app/data"
+DATA_DIR = "app/data"
 
 class EDARequest(BaseModel):
     filename: str

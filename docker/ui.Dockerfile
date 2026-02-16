@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-WORKDIR /app
+WORKDIR /flowforge
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -11,7 +11,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY app /app
+COPY app /flowforge/app
 
 # Expose port
 EXPOSE 8501

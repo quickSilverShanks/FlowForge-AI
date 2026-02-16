@@ -6,7 +6,7 @@ from app.api.schemas import DataUploadResponse
 
 router = APIRouter(prefix="/data", tags=["data"])
 
-DATA_DIR = "/app/data"
+DATA_DIR = "app/data"
 os.makedirs(DATA_DIR, exist_ok=True)
 
 @router.post("/upload", response_model=DataUploadResponse)
