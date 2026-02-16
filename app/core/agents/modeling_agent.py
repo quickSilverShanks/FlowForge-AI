@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Union, Any
 import os
 
+from app.core.config import LLM_MODEL_NAME
+
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 
 class HyperparameterRange(BaseModel):
@@ -23,7 +25,7 @@ class ModelingPlan(BaseModel):
     metric: str = Field(description="Optimization metric e.g. 'accuracy', 'f1', 'rmse'")
 
 class ModelingAgent:
-    def __init__(self, model: str = "llama3"):
+    def __init__(self, model: str = LLM_MODEL_NAME):
         self.llm = Ollama(base_url=OLLAMA_BASE_URL, model=model, temperature=0)
         self.parser = JsonOutputParser(pydantic_object=ModelingPlan)
         

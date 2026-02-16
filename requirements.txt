@@ -26,3 +26,5 @@ httpx==0.26.0
 # For fairness
 fairlearn==0.10.0
 python-multipart==0.0.9
+python-dotenv==1.0.1
+griffe==0.48.0

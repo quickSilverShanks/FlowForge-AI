@@ -63,6 +63,20 @@ graph TD
    docker exec -it flowforge_ollama ollama pull llama3
    ```
 
+### Configuration
+
+You can configure the LLM model used by the agents by setting the `LLM_MODEL_NAME` environment variable in the `.env` file at the root of the project.
+
+1.  Create a `.env` file (if not present):
+    ```bash
+    cp .env.example .env
+    ```
+2.  Edit `.env` and set your desired model:
+    ```env
+    LLM_MODEL_NAME=llama3
+    ```
+    *Note: Ensure the model you choose strictly matches the model name in Ollama.*
+
 ### Usage Guide
 
 Access the services at the following URLs:

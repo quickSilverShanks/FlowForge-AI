@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field
 from typing import List, Literal # Added literal import
 import os
 
+from app.core.config import LLM_MODEL_NAME
+
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 
 class TransformationStep(BaseModel):
@@ -16,7 +18,7 @@ class FeaturePlan(BaseModel):
     steps: List[TransformationStep]
 
 class FeatureEngineeringAgent:
-    def __init__(self, model: str = "llama3"):
+    def __init__(self, model: str = LLM_MODEL_NAME):
         self.llm = Ollama(base_url=OLLAMA_BASE_URL, model=model, temperature=0) # Low temp for deterministic code/json
         self.parser = JsonOutputParser(pydantic_object=FeaturePlan)
         

@@ -2,10 +2,12 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 import os
 
+from app.core.config import LLM_MODEL_NAME
+
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
 
 class EDAAgent:
-    def __init__(self, model: str = "llama3"):
+    def __init__(self, model: str = LLM_MODEL_NAME):
         self.llm = Ollama(base_url=OLLAMA_BASE_URL, model=model)
         
     def analyze(self, summary_text: str, problem_definition: str = None):
