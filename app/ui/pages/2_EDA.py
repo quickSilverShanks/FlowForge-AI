@@ -41,8 +41,15 @@ else:
         with st.spinner("Agent is analyzing your data..."):
             try:
                 problem_def = st.session_state.get("problem_definition", "General EDA")
-                # Pass session_id to backend for report naming
-                payload = {"filename": filename, "problem_definition": problem_def, "session_id": session_id}
+                target = st.session_state.get("target") # Fetch from Data Upload
+                
+                # Pass session_id and target to backend for context and report naming
+                payload = {
+                    "filename": filename, 
+                    "problem_definition": problem_def, 
+                    "session_id": session_id,
+                    "target_col": target
+                }
                 response = requests.post(f"{API_URL}/eda/analyze", json=payload)
                 
                 if response.status_code == 200:
@@ -55,7 +62,8 @@ else:
                         "filename": filename,
                         "analysis": saved_analysis,
                         "stats_summary": saved_stats,
-                        "problem_definition": problem_def
+                        "problem_definition": problem_def,
+                        "target": target
                     })
                     
                     # Save Page State
@@ -90,10 +98,10 @@ else:
                  st.success(f"📈 Detailed Excel Report generated: `{report_path}`")
             
             # Display Tables nicely
-            tabs = st.tabs(["Overview", "Missing Values", "Numerical Stats", "Correlations"])
+            tabs = st.tabs(["Overview", "Missing Values", "Numerical Stats", "Categorical Stats", "Correlation Matrix"])
             
             with tabs[0]:
-                st.json({k:v for k,v in saved_stats.items() if k not in ["missing_values", "numerical_stats", "high_correlations", "column_types"]})
+                st.json({k:v for k,v in saved_stats.items() if k not in ["missing_values", "numerical_stats", "categorical_stats", "correlations", "high_correlations", "column_types"]})
                 
             with tabs[1]:
                  st.table(pd.DataFrame(list(saved_stats.get("missing_values", {}).items()), columns=["Column", "Missing Count"]))
@@ -101,9 +109,22 @@ else:
             with tabs[2]:
                 if "numerical_stats" in saved_stats:
                     st.dataframe(pd.DataFrame(saved_stats["numerical_stats"]))
-            
+                    
             with tabs[3]:
-                 if "high_correlations" in saved_stats:
+                if "categorical_stats" in saved_stats and saved_stats["categorical_stats"]:
+                    cat_data = []
+                    for col, stats in saved_stats["categorical_stats"].items():
+                        stats["Column"] = col
+                        cat_data.append(stats)
+                    st.dataframe(pd.DataFrame(cat_data).set_index("Column"))
+                else:
+                    st.info("No categorical features found.")
+            
+            with tabs[4]:
+                 if "correlations" in saved_stats:
+                    # Heatmap-style dataframe
+                    st.dataframe(pd.DataFrame(saved_stats["correlations"]))
+                 elif "high_correlations" in saved_stats:
                     st.table(pd.DataFrame(list(saved_stats.get("high_correlations", {}).items()), columns=["Pair", "Correlation"]))
 
     st.divider()
@@ -139,7 +160,7 @@ else:
                 col_data = df[selected_col]
                 
                 # Visualizations
-                fig, ax = plt.subplots(figsize=(8, 4)) # Tighter figure
+                fig, ax = plt.subplots(figsize=(10, 6)) # Larger figure to accommodate overlapping
                 
                 is_numeric = pd.api.types.is_numeric_dtype(col_data) and not treat_as_cat
                 
@@ -148,10 +169,12 @@ else:
                     plt.subplot(1, 2, 1)
                     sns.histplot(col_data, kde=True)
                     plt.title("Distribution")
+                    plt.xticks(rotation=90)
                     
                     plt.subplot(1, 2, 2)
                     sns.boxplot(x=col_data)
                     plt.title("Boxplot")
+                    plt.xticks(rotation=90)
                     
                 else:
                     # Categorical: Count Plot
@@ -161,9 +184,12 @@ else:
                     
                     st.write(f"**Unique Categories:** {col_data.nunique()}")
                     
-                    sns.barplot(x=top_10.values, y=top_10.index, hue=top_10.index, legend=False)
+                    # Create plot
+                    sns.barplot(x=top_10.index.astype(str), y=top_10.values, palette="viridis")
                     plt.title("Top 10 Categories")
-                    plt.xlabel("Count")
+                    plt.xlabel(selected_col)
+                    plt.ylabel("Count")
+                    plt.xticks(rotation=90) # Rotate X-axis labels
                     
                     # Dataframe for top 10
                     top_10_df = pd.DataFrame({

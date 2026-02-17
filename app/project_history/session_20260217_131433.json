@@ -1,0 +1,51 @@
+{
+    "session_id": "20260217_131433",
+    "session_name": "Session 20260217_131433",
+    "created_at": "2026-02-17T13:14:33.149066",
+    "config": {
+        "filename": "ml_train.csv",
+        "target": "Weekly_Sales",
+        "problem_type": "Regression",
+        "session_name": "Session 20260217_131433"
+    },
+    "page_states": {
+        "DataUpload": {
+            "filename": "ml_train.csv",
+            "filepath": "app/data/ml_train.csv",
+            "columns": [
+                "Store",
+                "Dept",
+                "Date",
+                "Weekly_Sales",
+                "IsHoliday",
+                "Type",
+                "Size",
+                "Temperature",
+                "Fuel_Price",
+                "MarkDown1",
+                "MarkDown2",
+                "MarkDown3",
+                "MarkDown4",
+                "MarkDown5",
+                "CPI",
+                "Unemployment"
+            ],
+            "shape": [
+                294132,
+                16
+            ]
+        }
+    },
+    "timeline": [
+        {
+            "timestamp": "2026-02-17T13:14:58.879387",
+            "type": "configuration_saved",
+            "content": {
+                "filename": "ml_train.csv",
+                "target": "Weekly_Sales",
+                "problem_type": "Regression",
+                "session_name": "Session 20260217_131433"
+            }
+        }
+    ]
+}

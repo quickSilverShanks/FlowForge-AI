@@ -10,10 +10,13 @@ router = APIRouter(prefix="/eda", tags=["eda"])
 
 DATA_DIR = "app/data"
 
+from typing import Optional
+
 class EDARequest(BaseModel):
     filename: str
-    problem_definition: str = None
+    problem_definition: Optional[str] = None
     session_id: str = "default"
+    target_col: Optional[str] = None
 
 class EDAResponse(BaseModel):
     stats: dict
@@ -63,7 +66,7 @@ async def analyze_data(request: EDARequest):
         
         # 4. Agent Analysis
         agent = EDAAgent() # Uses environment variables for URL
-        analysis_result = agent.analyze(stats_text, request.problem_definition)
+        analysis_result = agent.analyze(stats_text, request.problem_definition, request.target_col)
         
         # 5. Log to Session
         logger = SessionLogger(session_id=request.session_id)
