@@ -1,7 +1,5 @@
-import streamlit as st
-import requests
 import os
-import json
+from app.ui.session_manager import log_event, save_page_state, get_page_state
 
 API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 PREFECT_URL = os.getenv("PREFECT_UI_URL", "http://localhost:4200")
@@ -11,11 +9,13 @@ st.set_page_config(page_title="Model Training", layout="wide")
 st.title("🏃 Model Training & Optimization")
 
 filename = st.text_input("Filename", value=st.session_state.get("current_filename", "transformed_train.csv"))
-target = st.text_input("Target Column", value="Survived")
-problem_type = st.selectbox("Problem Type", ["Classification", "Regression"])
+target = st.text_input("Target Column", value=st.session_state.get("target", "Survived"))
+problem_type = st.selectbox("Problem Type", ["Classification", "Regression"], index=0 if st.session_state.get("problem_type") == "Classification" else 1)
 
+# Load State
+page_state = get_page_state("ModelTraining")
 if "training_plan" not in st.session_state:
-    st.session_state.training_plan = {}
+    st.session_state.training_plan = page_state.get("plan", {})
 
 if st.button("Propose Training Plan"):
     with st.spinner("Agent is designing model search space..."):
@@ -23,8 +23,14 @@ if st.button("Propose Training Plan"):
             payload = {"filename": filename, "problem_definition": f"{problem_type} for {target}"}
             response = requests.post(f"{API_URL}/training/propose", json=payload)
             if response.status_code == 200:
-                st.session_state.training_plan = response.json()
+                plan = response.json()
+                st.session_state.training_plan = plan
+                
+                # Save State
+                save_page_state("ModelTraining", {"plan": plan})
+                
                 st.success("Plan Generated!")
+                st.rerun()
             else:
                 st.error(f"Failed: {response.text}")
         except Exception as e:

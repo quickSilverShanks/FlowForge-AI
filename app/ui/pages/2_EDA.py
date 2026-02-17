@@ -4,14 +4,12 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from app.ui.session_manager import log_event, load_session_state
+from app.ui.session_manager import log_event, save_page_state, get_page_state
+from app.api.routers.eda import DATA_DIR # Ensure correct path import
 
 API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 
 st.set_page_config(page_title="EDA", layout="wide")
-
-# Ensure session state is loaded
-load_session_state()
 
 st.title("🔍 Exploratory Data Analysis")
 
@@ -24,72 +22,139 @@ if not filename:
     if st.button("Go to Data Upload"):
         st.switch_page("pages/1_Data_Upload.py")
 else:
-    if st.button("Run AI Analysis"):
-        with st.spinner("Agent is analyzing your data... (This uses LLM, might take a minute)"):
+    # --- 1. AI Analysis & Stats (Persisted) ---
+    st.subheader("🤖 Automated Analysis")
+    
+    # Load Page State
+    page_state = get_page_state("EDA")
+    saved_analysis = page_state.get("analysis", "")
+    saved_stats = page_state.get("stats", {})
+
+    # Action Button
+    if st.button("Run AI Analysis" if not saved_analysis else "Regenerate Analysis"):
+        with st.spinner("Agent is analyzing your data..."):
             try:
-                # Check for existing problem definition or feedback
                 problem_def = st.session_state.get("problem_definition", "General EDA")
-                
                 payload = {"filename": filename, "problem_definition": problem_def}
                 response = requests.post(f"{API_URL}/eda/analyze", json=payload)
                 
                 if response.status_code == 200:
                     data = response.json()
-                    stats = data['stats']
-                    analysis = data['analysis']
+                    saved_stats = data['stats']
+                    saved_analysis = data['analysis']
                     
-                    # Log the analysis event
+                    # Log event
                     log_event("eda_analysis", {
                         "filename": filename,
-                        "stats_summary": stats, # Store summary, maybe too large?
-                        "analysis": analysis,
+                        "analysis": saved_analysis,
                         "problem_definition": problem_def
                     })
                     
-                    # Top Level Metrics
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Rows", stats['rows'])
-                    c2.metric("Columns", stats['columns'])
-                    c3.metric("Duplicates", stats['duplicates'])
-                    
-                    # Agent Analysis
-                    st.subheader("🤖 Agent Vibe Check")
-                    st.markdown(analysis)
-                    
-                    # Visualizations (recreating basic ones)
-                    st.subheader("📊 Key Correlations")
-                    if "high_correlations" in stats:
-                        st.write(stats['high_correlations'])
-                    else:
-                        st.info("No high correlations found or not calculated.")
-                        
-                    # Save analysis to session state for persistence within page reload
-                    st.session_state["last_eda_analysis"] = analysis
-                    
+                    # Save Page State
+                    save_page_state("EDA", {
+                        "analysis": saved_analysis,
+                        "stats": saved_stats,
+                        "timestamp": pd.Timestamp.now().isoformat()
+                    })
+                    st.rerun()
                 else:
                     st.error(f"Analysis failed: {response.text}")
-                    
             except Exception as e:
                 st.error(f"Error: {e}")
 
-    # Display previous analysis if available (mock versioning display could go here)
-    if "last_eda_analysis" in st.session_state:
-        if not st.session_state.get("last_eda_analysis"): # Handle empty case
-             pass 
-        # (Content is already displayed if just ran, but this keeps it after reload if we tracked it properly)
+    # Display Persisted Content (Collapsible)
+    if saved_analysis:
+        with st.expander("📄 AI Vibe Check & Analysis", expanded=True):
+            st.markdown(saved_analysis)
+
+    if saved_stats:
+        with st.expander("📊 Statistical Summary Table", expanded=False):
+            st.json(saved_stats) # Using JSON for now as stats structure varies
 
     st.divider()
+
+    # --- 2. Interactive Exploration (Transient) ---
+    st.subheader("🕵️ Interactive Data Exploration")
+    
+    # Load Data Directly (Read-only, for plotting)
+    try:
+        filepath = os.path.join(DATA_DIR, filename)
+        if os.path.exists(filepath):
+            if filename.endswith('.csv'):
+                df = pd.read_csv(filepath)
+            else:
+                df = pd.read_parquet(filepath)
+            
+            # Column Selection
+            all_columns = df.columns.tolist()
+            selected_col = st.selectbox("Select Column to Explore", all_columns)
+            
+            if st.button(f"Explore '{selected_col}'"):
+                st.markdown(f"### Analysis of **{selected_col}**")
+                col_data = df[selected_col]
+                
+                # Basic Stats
+                c1, c2, c3 = st.columns(3)
+                dtype = str(col_data.dtype)
+                missing = col_data.isnull().sum()
+                non_missing = col_data.count()
+                
+                c1.metric("Type", dtype)
+                c2.metric("Missing", f"{missing} ({missing/len(df):.1%})")
+                c3.metric("Non-Missing", non_missing)
+                
+                # Visualizations
+                fig, ax = plt.subplots(figsize=(10, 4))
+                
+                if pd.api.types.is_numeric_dtype(col_data):
+                    # Numeric: Histogram + Boxplot
+                    plt.subplot(1, 2, 1)
+                    sns.histplot(col_data, kde=True)
+                    plt.title("Distribution")
+                    
+                    plt.subplot(1, 2, 2)
+                    sns.boxplot(x=col_data)
+                    plt.title("Boxplot")
+                    
+                else:
+                    # Categorical: Count Plot
+                    # Top 10 Categories
+                    top_10 = col_data.value_counts().nlargest(10)
+                    total_count = len(col_data.dropna())
+                    
+                    st.write(f"**Unique Categories:** {col_data.nunique()}")
+                    
+                    sns.barplot(x=top_10.values, y=top_10.index, hue=top_10.index, legend=False)
+                    plt.title("Top 10 Categories")
+                    plt.xlabel("Count")
+                    
+                    # Dataframe for top 10
+                    top_10_df = pd.DataFrame({
+                        "Count": top_10.values,
+                        "Percent": (top_10.values / total_count * 100).round(2)
+                    }, index=top_10.index)
+                    st.dataframe(top_10_df)
+
+                st.pyplot(fig)
+                
+        else:
+            st.error(f"File not found on server: {filepath}")
+            
+    except Exception as e:
+        st.error(f"Could not load file for exploration: {e}")
+
+    st.divider()
+
+    # --- 3. Feedback Loop ---
     st.subheader("Feedback Loop")
     feedback = st.text_area("Observations or Instructions for Feature Engineering", placeholder="e.g., 'Drop the PassengerId column', 'Handle missing Age by median'")
     
     col1, col2 = st.columns([1, 4])
     with col1:
-        if st.button("Save Feedback & Update"):
+        if st.button("Save Feedback"):
             if feedback:
-                # Log feedback
                 log_event("user_feedback", {"page": "EDA", "content": feedback})
-                st.success("Feedback Logged! (Future: This would trigger re-analysis)")
-                # In future: call backend with feedback to regenerate
+                st.success("Feedback Logged!")
             else:
                 st.warning("Please enter feedback first.")
     

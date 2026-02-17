@@ -1,0 +1,238 @@
+{
+    "session_id": "20260217_090647",
+    "session_name": "Session 20260217_090647",
+    "created_at": "2026-02-17T09:06:47.604969",
+    "config": {
+        "filename": "ml_train.csv",
+        "target": "Weekly_Sales",
+        "problem_type": "Regression",
+        "session_name": "Session 20260217_090647"
+    },
+    "page_states": {
+        "DataUpload": {
+            "filename": "ml_train.csv",
+            "filepath": "app/data/ml_train.csv",
+            "columns": [
+                "Store",
+                "Dept",
+                "Date",
+                "Weekly_Sales",
+                "IsHoliday",
+                "Type",
+                "Size",
+                "Temperature",
+                "Fuel_Price",
+                "MarkDown1",
+                "MarkDown2",
+                "MarkDown3",
+                "MarkDown4",
+                "MarkDown5",
+                "CPI",
+                "Unemployment"
+            ],
+            "shape": [
+                294132,
+                16
+            ]
+        },
+        "EDA": {
+            "analysis": "**Vibe Check: A Detailed EDA Summary**\n=====================================\n\n### Key Data Quality Issues\n---------------------------\n\n*   **Missing Values**: The dataset contains a significant number of missing values, particularly in the `MarkDown1` to `MarkDown5` columns (approximately 92% of the data is missing). This could impact downstream analysis and modeling.\n*   **Data Types**: The `Date` column is of type 'object', which might not be ideal for date-related calculations. It's recommended to convert it to a datetime or timestamp format.\n*   **Duplicates**: Fortunately, there are no duplicates in the dataset.\n\n### Potential Target Leakage or Class Imbalance\n--------------------------------------------\n\nAssuming `Weekly_Sales` is the target variable (as it's the most likely candidate), here's a brief analysis:\n\n*   **Target Distribution**: The distribution of `Weekly_Sales` should be examined to identify any patterns, such as outliers or skewness.\n*   **Class Imbalance**: It's essential to check if there are any class imbalances in the target variable. A high number of classes with very few instances can lead to biased models.\n\n### Feature Engineering Opportunities\n-----------------------------------\n\nBased on the dataset characteristics:\n\n*   **Categorical Encodings**:\n    *   The `Type` column seems to be categorical, which could benefit from one-hot encoding or label encoding.\n    *   Consider creating additional features for `Store`, such as store ID, region, or type of store.\n*   **Date and Time Features**: Extract relevant date and time information from the `Date` column to create new features, like day of week, month, quarter, etc.\n*   **MarkDown Features**:\n    *   Since most MarkDown columns have a high number of missing values, consider aggregating or imputing them in some way. Alternatively, focus on the non-missing values and explore potential correlations with other variables.\n\n### Risks for Modeling\n----------------------\n\nBased on the EDA:\n\n*   **Missing Value Imputation**: The high number of missing values in `MarkDown1` to `MarkDown5` columns may impact modeling performance.\n*   **Data Type Issues**: Inaccurate or inconsistent data types (e.g., object vs. datetime) can lead to problems during analysis and modeling.\n\nTo mitigate these risks, consider the following:\n\n*   Impute missing values using techniques like mean/median imputation, K-Nearest Neighbors (KNN), or Multiple Imputation by Chained Equations (MICE).\n*   Convert date-related columns to datetime format for accurate calculations.\n*   Ensure consistent data types throughout the dataset.\n\nBy addressing these key issues and taking advantage of feature engineering opportunities, you'll be well-prepared to tackle the problem at hand.",
+            "stats": {
+                "rows": 294132,
+                "columns": 16,
+                "column_types": {
+                    "Store": "int64",
+                    "Dept": "int64",
+                    "Date": "object",
+                    "Weekly_Sales": "float64",
+                    "IsHoliday": "bool",
+                    "Type": "object",
+                    "Size": "int64",
+                    "Temperature": "float64",
+                    "Fuel_Price": "float64",
+                    "MarkDown1": "float64",
+                    "MarkDown2": "float64",
+                    "MarkDown3": "float64",
+                    "MarkDown4": "float64",
+                    "MarkDown5": "float64",
+                    "CPI": "float64",
+                    "Unemployment": "float64"
+                },
+                "missing_values": {
+                    "Store": 0,
+                    "Dept": 0,
+                    "Date": 0,
+                    "Weekly_Sales": 0,
+                    "IsHoliday": 0,
+                    "Type": 0,
+                    "Size": 0,
+                    "Temperature": 0,
+                    "Fuel_Price": 0,
+                    "MarkDown1": 270432,
+                    "MarkDown2": 273978,
+                    "MarkDown3": 271016,
+                    "MarkDown4": 273090,
+                    "MarkDown5": 270138,
+                    "CPI": 0,
+                    "Unemployment": 0
+                },
+                "duplicates": 0,
+                "numerical_stats": {
+                    "Store": {
+                        "count": 294132.0,
+                        "mean": 22.180177607332762,
+                        "std": 12.780169949535072,
+                        "min": 1.0,
+                        "25%": 11.0,
+                        "50%": 22.0,
+                        "75%": 33.0,
+                        "max": 45.0
+                    },
+                    "Dept": {
+                        "count": 294132.0,
+                        "mean": 44.18413501421131,
+                        "std": 30.430023385841604,
+                        "min": 1.0,
+                        "25%": 18.0,
+                        "50%": 37.0,
+                        "75%": 72.0,
+                        "max": 99.0
+                    },
+                    "Weekly_Sales": {
+                        "count": 294132.0,
+                        "mean": 16105.306895407502,
+                        "std": 22961.301004950597,
+                        "min": -4988.94,
+                        "25%": 2146.025,
+                        "50%": 7727.3099999999995,
+                        "75%": 20356.665,
+                        "max": 693099.36
+                    },
+                    "Size": {
+                        "count": 294132.0,
+                        "mean": 136889.5955965349,
+                        "std": 60917.8759566829,
+                        "min": 34875.0,
+                        "25%": 93638.0,
+                        "50%": 140167.0,
+                        "75%": 202505.0,
+                        "max": 219622.0
+                    },
+                    "Temperature": {
+                        "count": 294132.0,
+                        "mean": 58.90907918893557,
+                        "std": 18.93406150472855,
+                        "min": -2.06,
+                        "25%": 45.26,
+                        "50%": 60.42,
+                        "75%": 73.34,
+                        "max": 100.14
+                    },
+                    "Fuel_Price": {
+                        "count": 294132.0,
+                        "mean": 3.2096638992017197,
+                        "std": 0.4390601997147354,
+                        "min": 2.472,
+                        "25%": 2.808,
+                        "50%": 3.129,
+                        "75%": 3.595,
+                        "max": 4.211
+                    },
+                    "MarkDown1": {
+                        "count": 23700.0,
+                        "mean": 4534.01815485232,
+                        "std": 5246.59561725723,
+                        "min": 0.5,
+                        "25%": 759.8,
+                        "50%": 3332.41,
+                        "75%": 6123.19,
+                        "max": 34348.14
+                    },
+                    "MarkDown2": {
+                        "count": 20154.0,
+                        "mean": 7808.916193311502,
+                        "std": 18351.717034431345,
+                        "min": 0.0,
+                        "25%": 34.0,
+                        "50%": 171.88,
+                        "75%": 2027.77,
+                        "max": 104519.54
+                    },
+                    "MarkDown3": {
+                        "count": 23116.0,
+                        "mean": 8259.218704793217,
+                        "std": 22208.167491969154,
+                        "min": -0.87,
+                        "25%": 123.2,
+                        "50%": 379.57,
+                        "75%": 1330.53,
+                        "max": 141630.61
+                    },
+                    "MarkDown4": {
+                        "count": 21042.0,
+                        "mean": 1531.4934469156924,
+                        "std": 2141.139739293172,
+                        "min": 2.0,
+                        "25%": 162.33,
+                        "50%": 747.89,
+                        "75%": 2084.64,
+                        "max": 20834.37
+                    },
+                    "MarkDown5": {
+                        "count": 23994.0,
+                        "mean": 6393.2840518462945,
+                        "std": 7193.397172097144,
+                        "min": 135.16,
+                        "25%": 1792.92,
+                        "50%": 4078.21,
+                        "75%": 7509.9,
+                        "max": 37581.27
+                    },
+                    "CPI": {
+                        "count": 294132.0,
+                        "mean": 169.5295274371041,
+                        "std": 38.46444698164189,
+                        "min": 126.064,
+                        "25%": 131.9019677,
+                        "50%": 182.0779857,
+                        "75%": 211.0963582,
+                        "max": 223.2496766
+                    },
+                    "Unemployment": {
+                        "count": 294132.0,
+                        "mean": 8.232485632301143,
+                        "std": 1.865188898145802,
+                        "min": 4.42,
+                        "25%": 7.287,
+                        "50%": 8.058,
+                        "75%": 8.684,
+                        "max": 14.313
+                    }
+                },
+                "high_correlations": {}
+            },
+            "timestamp": "2026-02-17T09:16:03.688132"
+        }
+    },
+    "timeline": [
+        {
+            "timestamp": "2026-02-17T09:08:07.216208",
+            "type": "configuration_saved",
+            "content": {
+                "filename": "ml_train.csv",
+                "target": "Weekly_Sales",
+                "problem_type": "Regression",
+                "session_name": "Session 20260217_090647"
+            }
+        },
+        {
+            "timestamp": "2026-02-17T09:16:03.681431",
+            "type": "eda_analysis",
+            "content": {
+                "filename": "ml_train.csv",
+                "analysis": "**Vibe Check: A Detailed EDA Summary**\n=====================================\n\n### Key Data Quality Issues\n---------------------------\n\n*   **Missing Values**: The dataset contains a significant number of missing values, particularly in the `MarkDown1` to `MarkDown5` columns (approximately 92% of the data is missing). This could impact downstream analysis and modeling.\n*   **Data Types**: The `Date` column is of type 'object', which might not be ideal for date-related calculations. It's recommended to convert it to a datetime or timestamp format.\n*   **Duplicates**: Fortunately, there are no duplicates in the dataset.\n\n### Potential Target Leakage or Class Imbalance\n--------------------------------------------\n\nAssuming `Weekly_Sales` is the target variable (as it's the most likely candidate), here's a brief analysis:\n\n*   **Target Distribution**: The distribution of `Weekly_Sales` should be examined to identify any patterns, such as outliers or skewness.\n*   **Class Imbalance**: It's essential to check if there are any class imbalances in the target variable. A high number of classes with very few instances can lead to biased models.\n\n### Feature Engineering Opportunities\n-----------------------------------\n\nBased on the dataset characteristics:\n\n*   **Categorical Encodings**:\n    *   The `Type` column seems to be categorical, which could benefit from one-hot encoding or label encoding.\n    *   Consider creating additional features for `Store`, such as store ID, region, or type of store.\n*   **Date and Time Features**: Extract relevant date and time information from the `Date` column to create new features, like day of week, month, quarter, etc.\n*   **MarkDown Features**:\n    *   Since most MarkDown columns have a high number of missing values, consider aggregating or imputing them in some way. Alternatively, focus on the non-missing values and explore potential correlations with other variables.\n\n### Risks for Modeling\n----------------------\n\nBased on the EDA:\n\n*   **Missing Value Imputation**: The high number of missing values in `MarkDown1` to `MarkDown5` columns may impact modeling performance.\n*   **Data Type Issues**: Inaccurate or inconsistent data types (e.g., object vs. datetime) can lead to problems during analysis and modeling.\n\nTo mitigate these risks, consider the following:\n\n*   Impute missing values using techniques like mean/median imputation, K-Nearest Neighbors (KNN), or Multiple Imputation by Chained Equations (MICE).\n*   Convert date-related columns to datetime format for accurate calculations.\n*   Ensure consistent data types throughout the dataset.\n\nBy addressing these key issues and taking advantage of feature engineering opportunities, you'll be well-prepared to tackle the problem at hand.",
+                "problem_definition": "General EDA"
+            }
+        }
+    ]
+}

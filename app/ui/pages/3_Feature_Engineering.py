@@ -1,18 +1,18 @@
-import streamlit as st
-import requests
 import os
-import pandas as pd
+from app.ui.session_manager import log_event, save_page_state, get_page_state
 
 API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 
 st.set_page_config(page_title="Feature Engineering", layout="wide")
 st.title("🛠️ Feature Engineering")
 
-filename = st.text_input("Filename", value="train.csv")
-problem_definition = st.text_area("Problem Definition", value="Predict survival on Titanic", height=70)
+filename = st.text_input("Filename", value=st.session_state.get("current_filename", "train.csv"))
+problem_definition = st.text_area("Problem Definition", value=st.session_state.get("problem_definition", "Predict survival on Titanic"), height=70)
 
+# Load State
+page_state = get_page_state("FeatureEngineering")
 if "feature_plan" not in st.session_state:
-    st.session_state.feature_plan = []
+    st.session_state.feature_plan = page_state.get("plan", [])
 
 if st.button("Generate Feature Plan"):
     with st.spinner("Agent is designing features..."):
@@ -20,8 +20,14 @@ if st.button("Generate Feature Plan"):
             payload = {"filename": filename, "problem_definition": problem_definition}
             response = requests.post(f"{API_URL}/features/propose", json=payload)
             if response.status_code == 200:
-                st.session_state.feature_plan = response.json()['steps']
+                plan = response.json()['steps']
+                st.session_state.feature_plan = plan
+                
+                # Save State
+                save_page_state("FeatureEngineering", {"plan": plan})
+                
                 st.success("Plan Generated!")
+                st.rerun()
             else:
                 st.error(f"Failed: {response.text}")
         except Exception as e:
