@@ -1,17 +1,23 @@
 import streamlit as st
 import json
-from app.ui.session_manager import list_sessions, get_history, load_session_state
+from app.ui.session_manager import list_sessions, get_history, load_session_state, get_current_session_id
 
 st.set_page_config(page_title="Session History", layout="wide")
 load_session_state()
 
+# --- Sidebar Session Info ---
+active_session_id = get_current_session_id()
+active_session_name = st.session_state.get("session_name", f"Session {active_session_id}")
+st.sidebar.info(f"**Active Session:**\n{active_session_name}")
+# -----------------------------
+
 st.title("📜 Session History")
 
-# Sidebar for session selection
-sessions = list_sessions()
-session_options = {s["name"] + f" ({s['created_at']})": s["id"] for s in sessions}
+# Sidebar for session selection (Rename variable to avoid conflict)
+all_sessions = list_sessions()
+session_options = {s["name"] + f" ({s['created_at']})": s["id"] for s in all_sessions}
 
-selected_session_name = st.selectbox("Select Session", list(session_options.keys()))
+selected_session_name = st.selectbox("Select Session to View", list(session_options.keys()))
 
 if selected_session_name:
     session_id = session_options[selected_session_name]

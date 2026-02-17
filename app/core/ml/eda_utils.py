@@ -48,3 +48,38 @@ def format_summary_for_llm(summary: dict) -> str:
         text += "High Correlations (>0.8):\n" + str(summary['high_correlations']) + "\n\n"
         
     return text
+
+def generate_excel_report(df: pd.DataFrame, summary: dict, output_path: str):
+    """
+    Saves the EDA summary and raw data samples to an Excel file with multiple sheets.
+    """
+    try:
+        with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+            # Sheet 1: General Summary
+            general_data = {
+                "Metric": ["Rows", "Columns", "Duplicates (Checked)", "Missing Values Total"],
+                "Value": [summary["rows"], summary["columns"], summary["duplicates"], sum(summary["missing_values"].values())]
+            }
+            pd.DataFrame(general_data).to_excel(writer, sheet_name="Overview", index=False)
+            
+            # Sheet 2: Column Types
+            pd.DataFrame(list(summary["column_types"].items()), columns=["Column", "Type"]).to_excel(writer, sheet_name="Column Types", index=False)
+            
+            # Sheet 3: Missing Values
+            pd.DataFrame(list(summary["missing_values"].items()), columns=["Column", "Missing Count"]).to_excel(writer, sheet_name="Missing Values", index=False)
+            
+            # Sheet 4: Numerical Stats
+            if "numerical_stats" in summary:
+                pd.DataFrame(summary["numerical_stats"]).to_excel(writer, sheet_name="Numerical Stats")
+                
+            # Sheet 5: Correlations
+            if "high_correlations" in summary:
+                 pd.DataFrame(list(summary["high_correlations"].items()), columns=["Pair", "Correlation"]).to_excel(writer, sheet_name="High Correlations", index=False)
+                 
+            # Sheet 6: Data Sample
+            df.head(20).to_excel(writer, sheet_name="Data Sample (First 20)", index=False)
+            
+        return True
+    except Exception as e:
+        print(f"Error generating Excel report: {e}")
+        return False

@@ -1,9 +1,19 @@
+import streamlit as st
+import requests
 import os
-from app.ui.session_manager import log_event, save_page_state, get_page_state
+import json
+from app.ui.session_manager import log_event, save_page_state, get_page_state, get_current_session_id
 
 API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 
 st.set_page_config(page_title="Feature Engineering", layout="wide")
+
+# --- Sidebar Session Info ---
+session_id = get_current_session_id()
+session_name = st.session_state.get("session_name", f"Session {session_id}")
+st.sidebar.info(f"**Active Session:**\n{session_name}")
+# -----------------------------
+
 st.title("🛠️ Feature Engineering")
 
 filename = st.text_input("Filename", value=st.session_state.get("current_filename", "train.csv"))

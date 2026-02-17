@@ -4,12 +4,18 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from app.ui.session_manager import log_event, save_page_state, get_page_state
-from app.api.routers.eda import DATA_DIR # Ensure correct path import
+from app.ui.session_manager import log_event, save_page_state, get_page_state, get_current_session_id
+from app.api.routers.eda import DATA_DIR
 
 API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 
 st.set_page_config(page_title="EDA", layout="wide")
+
+# --- Sidebar Session Info ---
+session_id = get_current_session_id()
+session_name = st.session_state.get("session_name", f"Session {session_id}")
+st.sidebar.info(f"**Active Session:**\n{session_name}")
+# -----------------------------
 
 st.title("🔍 Exploratory Data Analysis")
 
@@ -35,7 +41,8 @@ else:
         with st.spinner("Agent is analyzing your data..."):
             try:
                 problem_def = st.session_state.get("problem_definition", "General EDA")
-                payload = {"filename": filename, "problem_definition": problem_def}
+                # Pass session_id to backend for report naming
+                payload = {"filename": filename, "problem_definition": problem_def, "session_id": session_id}
                 response = requests.post(f"{API_URL}/eda/analyze", json=payload)
                 
                 if response.status_code == 200:
@@ -47,6 +54,7 @@ else:
                     log_event("eda_analysis", {
                         "filename": filename,
                         "analysis": saved_analysis,
+                        "stats_summary": saved_stats,
                         "problem_definition": problem_def
                     })
                     
@@ -68,8 +76,35 @@ else:
             st.markdown(saved_analysis)
 
     if saved_stats:
-        with st.expander("📊 Statistical Summary Table", expanded=False):
-            st.json(saved_stats) # Using JSON for now as stats structure varies
+        with st.expander("📊 Statistical Summary Tables (Cleaned Data)", expanded=False):
+            
+            # Duplicates Report
+            dupes = saved_stats.get("duplicates", 0)
+            orig_rows = saved_stats.get("rows_original", 0)
+            if dupes > 0:
+                st.warning(f"⚠️ **{dupes}** duplicate rows were detected and **dropped**! (Original: {orig_rows}, Cleaned: {saved_stats.get('rows_cleaned')})")
+            
+            # Excel Report Link
+            report_path = saved_stats.get("report_path")
+            if report_path and os.path.exists(report_path):
+                 st.success(f"📈 Detailed Excel Report generated: `{report_path}`")
+            
+            # Display Tables nicely
+            tabs = st.tabs(["Overview", "Missing Values", "Numerical Stats", "Correlations"])
+            
+            with tabs[0]:
+                st.json({k:v for k,v in saved_stats.items() if k not in ["missing_values", "numerical_stats", "high_correlations", "column_types"]})
+                
+            with tabs[1]:
+                 st.table(pd.DataFrame(list(saved_stats.get("missing_values", {}).items()), columns=["Column", "Missing Count"]))
+                 
+            with tabs[2]:
+                if "numerical_stats" in saved_stats:
+                    st.dataframe(pd.DataFrame(saved_stats["numerical_stats"]))
+            
+            with tabs[3]:
+                 if "high_correlations" in saved_stats:
+                    st.table(pd.DataFrame(list(saved_stats.get("high_correlations", {}).items()), columns=["Pair", "Correlation"]))
 
     st.divider()
 
@@ -85,28 +120,30 @@ else:
             else:
                 df = pd.read_parquet(filepath)
             
+            # Boolean to string for categorical plotting
+            bool_cols = df.select_dtypes(include=['bool']).columns
+            for col in bool_cols:
+                df[col] = df[col].astype(str)
+                
             # Column Selection
             all_columns = df.columns.tolist()
             selected_col = st.selectbox("Select Column to Explore", all_columns)
+            
+            # Toggle for Integer -> Categorical
+            treat_as_cat = False
+            if pd.api.types.is_integer_dtype(df[selected_col]):
+                treat_as_cat = st.checkbox("Treat Integer as Categorical", value=False)
             
             if st.button(f"Explore '{selected_col}'"):
                 st.markdown(f"### Analysis of **{selected_col}**")
                 col_data = df[selected_col]
                 
-                # Basic Stats
-                c1, c2, c3 = st.columns(3)
-                dtype = str(col_data.dtype)
-                missing = col_data.isnull().sum()
-                non_missing = col_data.count()
-                
-                c1.metric("Type", dtype)
-                c2.metric("Missing", f"{missing} ({missing/len(df):.1%})")
-                c3.metric("Non-Missing", non_missing)
-                
                 # Visualizations
-                fig, ax = plt.subplots(figsize=(10, 4))
+                fig, ax = plt.subplots(figsize=(8, 4)) # Tighter figure
                 
-                if pd.api.types.is_numeric_dtype(col_data):
+                is_numeric = pd.api.types.is_numeric_dtype(col_data) and not treat_as_cat
+                
+                if is_numeric:
                     # Numeric: Histogram + Boxplot
                     plt.subplot(1, 2, 1)
                     sns.histplot(col_data, kde=True)
@@ -135,6 +172,7 @@ else:
                     }, index=top_10.index)
                     st.dataframe(top_10_df)
 
+                plt.tight_layout() # Fix Overlapping
                 st.pyplot(fig)
                 
         else:
