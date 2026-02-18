@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
-from app.api.routers import data, eda, features, training, evaluation, chat
+from app.api.routers import data, eda, features, training, evaluation, chat, orchestrator
 
 app = FastAPI(title="FlowForge AI Backend", version="1.0.0")
 
@@ -21,6 +21,7 @@ app.include_router(features.router)
 app.include_router(training.router)
 app.include_router(evaluation.router)
 app.include_router(chat.router)
+app.include_router(orchestrator.router)
 
 @app.get("/")
 async def root():

@@ -3,6 +3,11 @@ import json
 from app.ui.session_manager import list_sessions, get_history, load_session_state, get_current_session_id
 
 st.set_page_config(page_title="Session History", layout="wide")
+st.set_page_config(page_title="Session History", layout="wide")
+
+from app.ui.components.orchestrator import render_orchestrator_sidebar
+render_orchestrator_sidebar()
+
 load_session_state()
 
 # --- Sidebar Session Info ---

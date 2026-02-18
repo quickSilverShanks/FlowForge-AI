@@ -1,8 +1,11 @@
 import streamlit as st
 
 from app.ui.session_manager import list_sessions, load_session, initialize_session, get_current_session_id
+from app.ui.components.orchestrator import render_orchestrator_sidebar
 
 st.set_page_config(page_title="FlowForge AI", page_icon="🚀", layout="wide")
+
+render_orchestrator_sidebar()
 
 # Sidebar Session Management
 st.sidebar.title("🧠 Session Manager")

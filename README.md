@@ -99,6 +99,65 @@ Access the services at the following URLs:
 6.  **Monitoring**: Generate a drift detection config.
 7.  **Final Report**: Chat with the `RAG Agent` to ask questions about what happened during the session (e.g., "Why did we drop the Age column?").
 
+## 🧠 Agentic Architecture
+
+FlowForge AI employs a **Multi-Agent System** where a central **Orchestrator** manages specialized agents to complete complex data science tasks.
+
+### Interaction Graph
+
+```mermaid
+graph TD
+    User[User] -->|Request| Orchestrator[Orchestrator Agent]
+    
+    subgraph Specialist Agents
+        Orchestrator -->|Delegate| DataAgent[Data Agent]
+        Orchestrator -->|Delegate| FEAgent[Feature Engineering Agent]
+        Orchestrator -->|Delegate| FSAgent[Feature Selection Agent]
+        Orchestrator -->|Delegate| ModelAgent[Model Build Agent]
+        Orchestrator -->|Delegate| HPOAgent[Hyperparameter Agent]
+        Orchestrator -->|Delegate| ValAgent[Validation Agent]
+        Orchestrator -->|Delegate| GovAgent[Governance Agent]
+        Orchestrator -->|Delegate| DocAgent[Documentation Agent]
+        Orchestrator -->|Query| SearchAgent[Search Agent]
+    end
+
+    DataAgent -->|Read/Write| FileSys[(File System)]
+    FEAgent -->|Transform| FileSys
+    ModelAgent -->|Train| Prefect[Prefect]
+    HPOAgent -->|Optimize| Optuna[Optuna]
+    ValAgent -->|Evaluate| MLflow[MLflow]
+    
+    Orchestrator -->|Plan & Results| User
+```
+
+### How it Works
+1.  **Orchestrator**: The brain of the operation. It receives user requests (e.g., "Train a model on this dataset"), breaks them down into a step-by-step plan, and delegates each step to the appropriate specialist agent.
+2.  **Specialist Agents**: Each agent is an expert in one domain (e.g., the `DataAgent` knows how to load and analyze data, the `FeatureEngineeringAgent` knows how to impute and encode). They execute their specific tasks using defined tools and report back to the Orchestrator.
+3.  **Context Management**: The Orchestrator maintains the global context of the project, ensuring that subsequent agents have the information they need (like the current dataset filename or the target variable) from previous steps.
+
+## 🧪 Testing
+
+The project includes a comprehensive test suite to verify the agentic workflow and individual components.
+
+### Running Tests in Docker
+
+Since the application runs in Docker, the best way to run tests is inside the `backend` container.
+
+1.  **Ensure the stack is running**:
+    ```bash
+    docker-compose up -d
+    ```
+
+2.  **Run the tests**:
+    ```bash
+    docker-compose exec backend pytest tests/
+    ```
+
+    Or to run a specific test file:
+    ```bash
+    docker-compose exec backend pytest tests/test_agents.py
+    ```
+
 ## 🛠️ Development
 
 - **Backend Code**: `app/api/`

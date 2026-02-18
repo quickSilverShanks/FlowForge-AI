@@ -2,6 +2,11 @@ import streamlit as st
 import json
 
 st.set_page_config(page_title="Monitoring", layout="wide")
+st.set_page_config(page_title="Monitoring", layout="wide")
+
+from app.ui.components.orchestrator import render_orchestrator_sidebar
+render_orchestrator_sidebar()
+
 st.title("📡 Monitoring & Governance")
 
 st.info("Define monitoring thresholds for your deployed model.")

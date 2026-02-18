@@ -5,6 +5,11 @@ import os
 API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 
 st.set_page_config(page_title="Final Report", layout="wide")
+st.set_page_config(page_title="Final Report", layout="wide")
+
+from app.ui.components.orchestrator import render_orchestrator_sidebar
+render_orchestrator_sidebar()
+
 st.title("📑 Final Documentation & RAG Chat")
 
 st.markdown("""
