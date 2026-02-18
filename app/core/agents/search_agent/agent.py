@@ -8,8 +8,8 @@ from app.core.agents.search_agent import tools as search_tools
 from app.core.config import LLM_MODEL_NAME
 
 class SearchAgent(BaseAgent):
-    def __init__(self):
-        super().__init__(name="search_agent", role="Knowledge Assistant")
+    def __init__(self, session_id: str = "default"):
+        super().__init__(name="search_agent", role="Knowledge Assistant", session_id=session_id)
         self.llm = Ollama(base_url="http://ollama:11434", model=LLM_MODEL_NAME, temperature=0)
         
     def answer_question(self, question: str, context: str) -> str:
@@ -28,10 +28,16 @@ class SearchAgent(BaseAgent):
         prompt = PromptTemplate.from_template(template)
         chain = prompt | self.llm
         
-        return chain.invoke({
+        answer = chain.invoke({
             "question": question,
             "context": context
         })
+        
+        # Log Interaction
+        formatted_prompt = template.format(question=question, context=context)
+        self.log_interaction(formatted_prompt, str(answer))
+        
+        return answer
 
     def run(self, input_text: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
         # Similar logic to Documentation Agent to find project root

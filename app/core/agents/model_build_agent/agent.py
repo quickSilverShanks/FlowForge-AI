@@ -24,8 +24,8 @@ class ModelingPlan(BaseModel):
     metric: str = Field(description="Optimization metric e.g. 'accuracy', 'f1', 'rmse'")
 
 class ModelBuildAgent(BaseAgent):
-    def __init__(self):
-        super().__init__(name="model_build_agent", role="Model Architect")
+    def __init__(self, session_id: str = "default"):
+        super().__init__(name="model_build_agent", role="Model Architect", session_id=session_id)
         self.llm = Ollama(base_url="http://ollama:11434", model=LLM_MODEL_NAME, temperature=0)
         self.parser = JsonOutputParser(pydantic_object=ModelingPlan)
         
@@ -52,10 +52,20 @@ class ModelBuildAgent(BaseAgent):
         chain = prompt | self.llm | self.parser
         
         try:
-            return chain.invoke({
+            plan = chain.invoke({
                 "problem_definition": problem_definition,
                 "summary_text": summary_text
             })
+            
+            # Log Interaction
+            formatted_prompt = template.format(
+                problem_definition=problem_definition,
+                summary_text=summary_text,
+                format_instructions=self.parser.get_format_instructions()
+            )
+            self.log_interaction(formatted_prompt, str(plan))
+            
+            return plan
         except Exception as e:
             self.log_step("error_generating_model_plan", {}, str(e))
             return {"configs": [], "metric": "accuracy"}

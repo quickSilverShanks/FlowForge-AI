@@ -11,11 +11,7 @@ st.set_page_config(page_title="Data Upload", layout="wide")
 from app.ui.components.orchestrator import render_orchestrator_sidebar
 render_orchestrator_sidebar()
 
-# --- Sidebar Session Info ---
-session_id = get_current_session_id()
-session_name_display = st.session_state.get("session_name", f"Session {session_id}")
-st.sidebar.info(f"**Active Session:**\n{session_name_display}")
-# -----------------------------
+# Sidebar Session Info removed (handled by orchestrator)
 
 
 st.title("📂 Data Upload & Problem Definition")
@@ -125,5 +121,9 @@ if columns: # Only show if we have active data
         log_event("configuration_saved", config_data)
         st.success("Configuration Saved! You can now proceed to EDA.")
         
-    if st.button("Next: EDA ➡️"):
-         st.switch_page("pages/2_EDA.py")
+    # Next Button
+    st.divider()
+    col_next = st.columns([6, 1])[1]
+    with col_next:
+        if st.button("Next: EDA ➡", type="primary"):
+            st.switch_page("pages/2_EDA.py")

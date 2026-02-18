@@ -5,7 +5,6 @@ import os
 API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 
 st.set_page_config(page_title="Final Report", layout="wide")
-st.set_page_config(page_title="Final Report", layout="wide")
 
 from app.ui.components.orchestrator import render_orchestrator_sidebar
 render_orchestrator_sidebar()
@@ -44,3 +43,10 @@ if prompt := st.chat_input("Ask about your model development (e.g., 'Why did we 
                     st.session_state.messages.append({"role": "assistant", "content": err})
             except Exception as e:
                 st.error(f"Error: {e}")
+
+# Next Button
+st.divider()
+col_next = st.columns([6, 1])[1]
+with col_next:
+    if st.button("Next: Session History ➡", type="primary"):
+        st.switch_page("pages/9_History.py")

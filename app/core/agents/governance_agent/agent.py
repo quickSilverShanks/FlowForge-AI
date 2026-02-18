@@ -25,7 +25,13 @@ class GovernanceAgent(BaseAgent):
         prompt = PromptTemplate.from_template(template)
         chain = prompt | self.llm
         
-        return chain.invoke({"explanation": str(explanation)})
+        interpretation = chain.invoke({"explanation": str(explanation)})
+        
+        # Log Interaction
+        formatted_prompt = template.format(explanation=str(explanation))
+        self.log_interaction(formatted_prompt, str(interpretation))
+        
+        return interpretation
 
     def run(self, input_text: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
         file_path = context.get("file_path")

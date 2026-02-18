@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import os
+import json
 from app.ui.session_manager import log_event, save_page_state, get_page_state, get_current_session_id
 
 API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
@@ -9,16 +10,10 @@ MLFLOW_URL = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
 
 st.set_page_config(page_title="Model Training", layout="wide")
 
-st.set_page_config(page_title="Model Training", layout="wide")
-
 from app.ui.components.orchestrator import render_orchestrator_sidebar
 render_orchestrator_sidebar()
 
-# --- Sidebar Session Info ---
-session_id = get_current_session_id()
-session_name = st.session_state.get("session_name", f"Session {session_id}")
-st.sidebar.info(f"**Active Session:**\n{session_name}")
-# -----------------------------
+# Sidebar Session Info removed (handled by orchestrator)
 
 st.title("🏃 Model Training & Optimization")
 
@@ -87,3 +82,10 @@ if st.session_state.training_plan:
             st.error("Invalid JSON configuration")
         except Exception as e:
             st.error(f"Error: {e}")
+
+# Next Button
+st.divider()
+col_next = st.columns([6, 1])[1]
+with col_next:
+    if st.button("Next: Validation & Fairness ➡", type="primary"):
+        st.switch_page("pages/5_Validation_and_Fairness.py")

@@ -3,7 +3,8 @@ from pydantic import BaseModel
 import pandas as pd
 import os
 from app.core.ml import eda_utils
-from app.core.agents.eda_agent import EDAAgent
+from app.core.agents.data_agent.agent import DataAgent
+# from app.core.agents.eda_agent import EDAAgent # Removed
 from app.core.utils.logger import SessionLogger
 
 router = APIRouter(prefix="/eda", tags=["eda"])
@@ -63,20 +64,31 @@ async def analyze_data(request: EDARequest):
         
         eda_utils.generate_excel_report(df, stats, report_path)
         stats["report_path"] = report_path # Log location
+        # Initialize DataAgent
+        agent = DataAgent(session_id=request.session_id)
+
+        # Run analysis (DataAgent.analyze_data expects file_path, problem_definition, target_col)
+        # We need to map request.filepath to file_path
         
-        # 4. Agent Analysis
-        agent = EDAAgent() # Uses environment variables for URL
-        analysis_result = agent.analyze(stats_text, request.problem_definition, request.target_col)
+        # Note: DataAgent.analyze_data returns a specific dict structure.
+        # We might need to adapt the response or just return it as is if compatible.
         
-        # 5. Log to Session
-        logger = SessionLogger(session_id=request.session_id)
-        logger.log_step("EDA", {
-            "analysis": analysis_result, 
-            "stats_summary": stats,
-            "report_path": report_path
-        })
+        # Construct the full file path from the filename
+        file_path = f"{DATA_DIR}/{request.filename}"
+
+        result = agent.analyze_data(
+            file_path=file_path, 
+            problem_definition=request.problem_definition, # Use problem_definition from request
+            target_col=request.target_col # Use target_col from request
+        )
         
-        return EDAResponse(stats=stats, analysis=analysis_result)
-        
+        if result.get("status") == "error":
+             raise HTTPException(status_code=500, detail=result.get("message"))
+
+        return EDAResponse(
+            stats=stats,
+            analysis=result.get("analysis", "No analysis generated")
+        )
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

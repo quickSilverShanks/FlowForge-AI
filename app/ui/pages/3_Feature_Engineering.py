@@ -8,16 +8,10 @@ API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 
 st.set_page_config(page_title="Feature Engineering", layout="wide")
 
-st.set_page_config(page_title="Feature Engineering", layout="wide")
-
 from app.ui.components.orchestrator import render_orchestrator_sidebar
 render_orchestrator_sidebar()
 
-# --- Sidebar Session Info ---
-session_id = get_current_session_id()
-session_name = st.session_state.get("session_name", f"Session {session_id}")
-st.sidebar.info(f"**Active Session:**\n{session_name}")
-# -----------------------------
+# Sidebar Session Info removed (handled by orchestrator)
 
 st.title("🛠️ Feature Engineering")
 
@@ -86,3 +80,10 @@ if st.session_state.feature_plan:
                     st.error(f"Failed: {response.text}")
             except Exception as e:
                 st.error(f"Error: {e}")
+
+# Next Button
+st.divider()
+col_next = st.columns([6, 1])[1]
+with col_next:
+    if st.button("Next: Model Training ➡", type="primary"):
+        st.switch_page("pages/4_Model_Training.py")

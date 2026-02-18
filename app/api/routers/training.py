@@ -5,7 +5,7 @@ import pandas as pd
 import os
 from app.api.routers.eda import DATA_DIR
 from app.core.ml import eda_utils
-from app.core.agents.modeling_agent import ModelingAgent, ModelingPlan
+from app.core.agents.model_build_agent.agent import ModelBuildAgent, ModelingPlan
 from app.core.flows.training_flow import run_training_flow
 
 router = APIRouter(prefix="/training", tags=["training"])
@@ -38,7 +38,8 @@ async def propose_model(request: TrainingProposeRequest):
         stats = eda_utils.generate_eda_summary(df)
         stats_text = eda_utils.format_summary_for_llm(stats)
         
-        agent = ModelingAgent()
+        # Request has session_id? No, ProposeRequest has filename, problem_definition.
+        agent = ModelBuildAgent(session_id="default")
         plan = agent.propose_models(request.problem_definition, stats_text)
         
         return plan

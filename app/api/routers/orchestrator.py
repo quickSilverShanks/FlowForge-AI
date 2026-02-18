@@ -26,7 +26,8 @@ class RunResponse(BaseModel):
 @router.post("/plan", response_model=PlanResponse)
 async def generate_plan(request: PlanRequest):
     try:
-        agent = OrchestratorAgent()
+        # PlanRequest doesn't have session_id, use default or infer from context string if possible
+        agent = OrchestratorAgent(session_id="default")
         steps = agent.plan(request.user_request, request.project_context)
         return {"steps": steps}
     except Exception as e:
@@ -35,7 +36,8 @@ async def generate_plan(request: PlanRequest):
 @router.post("/run", response_model=RunResponse)
 async def run_orchestrator(request: RunRequest):
     try:
-        agent = OrchestratorAgent()
+        session_id = request.context.get("session_id", "default") if request.context else "default"
+        agent = OrchestratorAgent(session_id=session_id)
         result = agent.run(request.user_request, request.context or {})
         return result
     except Exception as e:

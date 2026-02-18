@@ -103,6 +103,12 @@ def get_page_state(page_key):
         st.session_state.page_states = {}
     return st.session_state.page_states.get(page_key, {})
 
+def get_all_page_states():
+    """Retrieves the state for all pages in the current session."""
+    if "page_states" not in st.session_state:
+        st.session_state.page_states = {}
+    return st.session_state.page_states
+
 def log_event(event_type: str, content: dict):
     """Logs an event to the session timeline and updates config if needed."""
     session_id = get_current_session_id()

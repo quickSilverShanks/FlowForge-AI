@@ -11,16 +11,11 @@ API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 
 st.set_page_config(page_title="EDA", layout="wide")
 
-st.set_page_config(page_title="EDA", layout="wide")
-
-from app.ui.components.orchestrator import render_orchestrator_sidebar
+from app.ui.components.orchestrator import render_orchestrator_sidebar, process_orchestrator_request
 render_orchestrator_sidebar()
 
-# --- Sidebar Session Info ---
+# Sidebar Session Info removed (handled by orchestrator)
 session_id = get_current_session_id()
-session_name = st.session_state.get("session_name", f"Session {session_id}")
-st.sidebar.info(f"**Active Session:**\n{session_name}")
-# -----------------------------
 
 st.title("🔍 Exploratory Data Analysis")
 
@@ -220,13 +215,29 @@ else:
     
     col1, col2 = st.columns([1, 4])
     with col1:
-        if st.button("Save Feedback"):
+        if st.button("Submit to Orchestrator"):
             if feedback:
+                # Log event
                 log_event("user_feedback", {"page": "EDA", "content": feedback})
-                st.success("Feedback Logged!")
+                
+                # Trigger Orchestrator
+                prompt = f"The user provided feedback on the EDA page: '{feedback}'. Please update the plan and execute necessary steps."
+                
+                # Context from page
+                eda_context = {
+                    "eda_analysis": saved_analysis,
+                    "eda_stats_summary": {k:v for k,v in saved_stats.items() if k not in ["numerical_stats", "categorical_stats", "correlations"]}
+                }
+                process_orchestrator_request(prompt, extra_context=eda_context)
+                
+                st.success("Feedback sent to Orchestrator! Check the sidebar for the updated plan.")
+                st.rerun()
             else:
                 st.warning("Please enter feedback first.")
     
     with col2:
-         if st.button("Next: Feature Engineering ➡️"):
-            st.switch_page("pages/3_Feature_Engineering.py")
+        # Next Button
+        col_next = st.columns([6, 1])[1]
+        with col_next:
+            if st.button("Next: Feature Engineering ➡", type="primary"):
+                st.switch_page("pages/3_Feature_Engineering.py")

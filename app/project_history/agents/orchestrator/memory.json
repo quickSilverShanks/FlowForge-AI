@@ -1,0 +1,14 @@
+{
+    "last_plan": [
+        {
+            "agent": "data_agent",
+            "instruction": "Update EDA page to include suggestions on handling missing values and column selection.",
+            "reasoning": "User feedback requires updating the data analysis process."
+        },
+        {
+            "agent": "feature_engineering_agent",
+            "instruction": "Impute missing values in relevant columns and select features for modeling.",
+            "reasoning": "Missing value imputation is necessary to prevent model bias, and feature selection will help improve model performance."
+        }
+    ]
+}

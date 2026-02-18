@@ -1,0 +1,34 @@
+{
+    "last_plan": [
+        {
+            "agent": "data_agent",
+            "instruction": "Load the dataset and perform initial EDA.",
+            "reasoning": "We need to understand the data first."
+        },
+        {
+            "agent": "feature_engineering_agent",
+            "instruction": "Impute missing values and encode categorical variables.",
+            "reasoning": "Models require clean numeric data."
+        },
+        {
+            "agent": "model_build_agent",
+            "instruction": "Suggest model types and define hyperparameter search spaces.",
+            "reasoning": "We need to select a suitable model for the problem at hand."
+        },
+        {
+            "agent": "hyperparameter_agent",
+            "instruction": "Run hyperparameter optimization studies using Optuna/MLflow.",
+            "reasoning": "Hyperparameters can significantly impact model performance, so we want to find the best combination."
+        },
+        {
+            "agent": "validation_agent",
+            "instruction": "Validate the best model on hold-out data (in-sample, out-of-time, out-of-sample).",
+            "reasoning": "We need to ensure that our model generalizes well and doesn't overfit the training data."
+        },
+        {
+            "agent": "documentation_agent",
+            "instruction": "Generate detailed documentation of the entire process.",
+            "reasoning": "This will help us track what we've done and why, making it easier to reproduce results or share with others."
+        }
+    ]
+}

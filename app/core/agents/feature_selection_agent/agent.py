@@ -41,12 +41,23 @@ class FeatureSelectionAgent(BaseAgent):
         chain = prompt | self.llm | JsonOutputParser()
         
         try:
-            return chain.invoke({
+            suggestion = chain.invoke({
                 "columns": str(columns),
                 "problem_definition": problem_definition,
                 "target_col": target_col,
                 "summary_text": summary_text
             })
+            
+            # Log Interaction
+            formatted_prompt = template.format(
+                columns=str(columns),
+                problem_definition=problem_definition,
+                target_col=target_col,
+                summary_text=summary_text
+            )
+            self.log_interaction(formatted_prompt, str(suggestion))
+            
+            return suggestion
         except Exception as e:
             self.log_step("error_suggesting_features", {}, str(e))
             return {"recommended_features": columns}

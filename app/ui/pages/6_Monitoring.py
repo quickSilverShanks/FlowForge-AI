@@ -2,7 +2,6 @@ import streamlit as st
 import json
 
 st.set_page_config(page_title="Monitoring", layout="wide")
-st.set_page_config(page_title="Monitoring", layout="wide")
 
 from app.ui.components.orchestrator import render_orchestrator_sidebar
 render_orchestrator_sidebar()
@@ -39,3 +38,10 @@ if st.button("Generate Monitoring Plan"):
     st.json(plan)
     
     st.download_button("Download Config", json.dumps(plan, indent=2), "monitoring_config.json")
+
+# Next Button
+st.divider()
+col_next = st.columns([6, 1])[1]
+with col_next:
+    if st.button("Next: Final Report ➡", type="primary"):
+        st.switch_page("pages/7_Final_Report.py")

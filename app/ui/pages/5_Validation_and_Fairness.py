@@ -6,7 +6,6 @@ import pandas as pd
 API_URL = os.getenv("API_BASE_URL", "http://backend:8000")
 
 st.set_page_config(page_title="Validation & Fairness", layout="wide")
-st.set_page_config(page_title="Validation & Fairness", layout="wide")
 
 from app.ui.components.orchestrator import render_orchestrator_sidebar
 render_orchestrator_sidebar()
@@ -72,3 +71,10 @@ if st.button("Generate Feature Importance"):
                 st.error(f"Failed: {response.text}")
         except Exception as e:
             st.error(f"Error: {e}")
+
+# Next Button
+st.divider()
+col_next = st.columns([6, 1])[1]
+with col_next:
+    if st.button("Next: Monitoring ➡", type="primary"):
+        st.switch_page("pages/6_Monitoring.py")

@@ -10,8 +10,8 @@ from app.core.agents.data_agent import tools as data_tools
 from app.core.config import LLM_MODEL_NAME
 
 class DataAgent(BaseAgent):
-    def __init__(self):
-        super().__init__(name="data_agent", role="Data Scientist & Analyst")
+    def __init__(self, session_id: str = "default"):
+        super().__init__(name="data_agent", role="Data Scientist & Analyst", session_id=session_id)
         self.llm = Ollama(base_url="http://ollama:11434", model=LLM_MODEL_NAME)
         
     def analyze_data(self, file_path: str, problem_definition: str = None, target_col: str = None) -> Dict[str, Any]:
@@ -55,6 +55,14 @@ class DataAgent(BaseAgent):
             "problem_definition": problem_definition or "Not specified",
             "target_col": target_col or "Not specified"
         })
+        
+        # Log Interaction
+        formatted_prompt = template.format(
+            summary_text=summary_text,
+            problem_definition=problem_definition or "Not specified",
+            target_col=target_col or "Not specified"
+        )
+        self.log_interaction(formatted_prompt, str(analysis))
         
         # 3. Generate Report
         report_path = self._execute_tool(data_tools.generate_report, file_path=file_path, summary=summary, output_dir=os.path.dirname(file_path))

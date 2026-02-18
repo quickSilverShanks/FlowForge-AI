@@ -44,7 +44,13 @@ class DocumentationAgent(BaseAgent):
         prompt = PromptTemplate.from_template(template)
         chain = prompt | self.llm
         
-        return chain.invoke({"logs": json.dumps(summary_logs)})
+        report = chain.invoke({"logs": json.dumps(summary_logs)})
+        
+        # Log Interaction
+        formatted_prompt = template.format(logs=json.dumps(summary_logs))
+        self.log_interaction(formatted_prompt, str(report))
+        
+        return report
 
     def run(self, input_text: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
         # Need to know where project history is. BaseAgent knows its own history dir, but we need the root project_history.

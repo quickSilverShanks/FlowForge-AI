@@ -20,8 +20,8 @@ class FeaturePlan(BaseModel):
     steps: List[TransformationStep]
 
 class FeatureEngineeringAgent(BaseAgent):
-    def __init__(self):
-        super().__init__(name="feature_engineering_agent", role="Feature Engineer")
+    def __init__(self, session_id: str = "default"):
+        super().__init__(name="feature_engineering_agent", role="Feature Engineer", session_id=session_id)
         self.llm = Ollama(base_url="http://ollama:11434", model=LLM_MODEL_NAME, temperature=0)
         self.parser = JsonOutputParser(pydantic_object=FeaturePlan)
         
@@ -50,10 +50,20 @@ class FeatureEngineeringAgent(BaseAgent):
         chain = prompt | self.llm | self.parser
         
         try:
-            return chain.invoke({
+            plan = chain.invoke({
                 "summary_text": summary_text,
                 "problem_definition": problem_definition
             })
+            
+            # Log Interaction
+            formatted_prompt = template.format(
+                summary_text=summary_text,
+                problem_definition=problem_definition,
+                format_instructions=self.parser.get_format_instructions()
+            )
+            self.log_interaction(formatted_prompt, str(plan))
+            
+            return plan
         except Exception as e:
             self.log_step("error_generating_plan", {}, str(e))
             return {"steps": []}
